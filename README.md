@@ -1,3 +1,3 @@
 # CDAC-project
-Sanket
+SANKET
 hello
