@@ -11,14 +11,14 @@
 
     * Main computational Function: `timeprop`
       * Inputs for the program:
-        * ncsf: Number of spatial grid points.
-        * xmin, xmax: Boundaries of the 1D spatial domain.
+        * `ncsf`: Number of spatial grid points.
+        * `xmin, xmax`: Boundaries of the 1D spatial domain.
         * lmda, flqchnl, noptc, istate, totime, ntim, omga, epsln: Parameters for time-propagation, Floquet channels, and external driving.
-          * lmda: Magnitude of the Complex Absorbing Potential
-          * flqchnl: Number of floquet channels
-          * noptc: Number of optical cycles
-          * istate: State index of the eigenfunction to be used as initial wavefunction
-          * totime: Total time of the time-propagation
-          * ntim: Number of time propagation loops
-          * omga: Frequency of laser
-          * epsln: Electric field strength of the laser 
+          * `lmda`: Magnitude of the Complex Absorbing Potential
+          * `flqchnl`: Number of floquet channels
+          * `noptc`: Number of optical cycles
+          * `istate`: State index of the eigenfunction to be used as initial wavefunction
+          * `totime`: Total time of the time-propagation
+          * `ntim`: Number of time propagation loops
+          * `omga`: Frequency of laser
+          * `epsln`: Electric field strength of the laser 
