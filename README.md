@@ -3,7 +3,7 @@
 * This project aims to optimize the performance of a sequential program by utilizing parallel programming techniques such as MPI, openMP and GPU programming using CUDA. The performance of each parallel programming technique will be evaluated and compared.
 
 ### The sequential code
-* The sequential C code implements the time-propagation of a quantum mechanical wavefunction in a harmonic potential in the presence of a laser using numerical linear algebra methods. It involves matrix operations, eigenvalue solving, and time evolution algorithm commonly used in quantum mechanics simulations. The key features of the code include constructing a Hamiltonian, diagonalizing it, and propagating the wavefunction using matrix exponentials in the context of the Floquet formalism.
+* The sequential C code implements the time-propagation of a quantum mechanical wavefunction in a harmonic potential in the presence of a laser using numerical linear algebra methods. It involves matrix operations, eigenvalue solving, and time evolution algorithm commonly used in quantum mechanics simulations. The key features of the code include constructing a Hamiltonian matrix, diagonalizing it, and propagating a wavefunction as initial state using matrix exponentials in the context of the Floquet formalism.
 
 * The key components in the code are:
   * Potential Function(`potential`):
