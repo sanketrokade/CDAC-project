@@ -36,3 +36,8 @@ T_{i,j} =
 \frac{(-1)^{i-j}}{(i-j)^2 dx^{2}}, & \text{for } i \ne j
 \end{cases}
 ```
+      
+          * This approximates the kinetic energy operator in the Hamiltonian.
+        * Potential Energy: 
+          * The diagonal of `hmt` is modified to include the harmonic potential:
+          ```math H_{ii} = T_{ii} + V{x_i}```
