@@ -13,7 +13,7 @@
       * Inputs for the program:
         * `ncsf`: Number of spatial grid points.
         * `xmin, xmax`: Boundaries of the 1D spatial domain.
-        * lmda, flqchnl, noptc, istate, totime, ntim, omga, epsln: Parameters for time-propagation, Floquet channels, and external driving.
+        * `lmda, flqchnl, noptc, istate, totime, ntim, omga, epsln`: Parameters for time-propagation, Floquet channels, and external driving.
           * `lmda`: Magnitude of the Complex Absorbing Potential
           * `flqchnl`: Number of floquet channels
           * `noptc`: Number of optical cycles
