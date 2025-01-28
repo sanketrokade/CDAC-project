@@ -163,7 +163,7 @@ int timeprop(int ncsf, double xmin, double xmax, double lmda, int flqchnl, int n
 
 
   if (info != 0) {
-      printf("Eror in LAPACKE_dsyev: %d\n",info);
+      printf("Error in LAPACKE_dsyev: %d\n",info);
 //      free(h);
 //      free(W);
       return -1;
