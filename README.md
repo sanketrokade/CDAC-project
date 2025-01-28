@@ -30,8 +30,9 @@
         * Kinetic Energy Matrix (hmt):
           * Constructed using the second derivative approximation in finite difference:
 ```math 
-T_{i,j} = \begin{cases} 
-\frac{6 \, dx^2}{\pi^2 (i-j)^2} (-1)^{i-j}, & \text{for } i \neq j \\
-dx^2, & \text{for } i = j
+T_{i,j} = 
+\begin{cases} 
+\frac{\pi^2}{6 dx^{2}}, & \text{for } i \eq j \\
+\frac{(-1)^{i-j}}{(i-j)^2 dx^{2}}, & \text{for } i \ne j
 \end{cases}
 ```
