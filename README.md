@@ -29,7 +29,7 @@
           - Time is divided into `ntim` steps of size `dtim`.
         - Kinetic Energy Matrix (hmt):
           - Constructed using the second derivative approximation in finite difference:
-            $$ T_{i,j} = \frac{\pi^2}{6 dx^{2}}, \text{for } i = j $$ 
+            $$ T_{i,j} $$ 
           - This approximates the kinetic energy operator in the Hamiltonian.
         - Potential Energy: 
           - The diagonal of `hmt` is modified to include the harmonic potential:
