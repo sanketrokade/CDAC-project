@@ -31,7 +31,32 @@
           - Constructed using the second derivative approximation in finite difference:
             $$T_{i,j} = \frac{\pi^2}{6 dx^{2}}, \text{for } i = j$$<br> 
             $$T_{i,j} = \frac{(-1)^{i-j}}{(i-j)^2 dx^{2}}, \text{for } i \ne j$$ 
-          - This approximates the kinetic energy operator in the Hamiltonian.
         - Potential Energy: 
           - The diagonal of `hmt` is modified to include the harmonic potential:
             $$H_{ii} = T_{ii} + V{x_i}$$
+        
+        - Diagonalization of Hamiltonian:
+          - LAPACK's LAPACKE_dsyev computes eigenvalues and eigenvectors of hmt.
+          - Eigenvalues represent energy levels, and eigenvectors represent stationary states.
+
+        - Wavefunction Initialization:
+          - The wavefunction is initialized using the eigenvector corresponding to the specified initial state (`istate`).
+
+        - Floquet Matrix Setup:
+          - The code creates Floquet channel matrices (`cumt1`, `cumt2`) for time propagation.
+
+          - These matrices are used to handle periodic driving fields.
+
+        - Matrix Exponentials:
+          - The core of time propagation involves matrix exponentials:
+            - Constructed from eigenvalues for time evolution.
+            - Includes external field effects via Floquet formalism.
+        
+        - BLAS Operations:
+          - BLAS routines (`cblas_zgemm`) perform matrix multiplications for efficient computation.
+
+        - Time Evolution:
+          - The wavefunction evolves in time using:
+            - The Floquet matrices.
+            - The complex Hamiltonian propagator (`exhm`).
+          - This evolution includes the effects of an oscillating external field.
