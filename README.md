@@ -8,4 +8,5 @@
 * The code simulates the time evolution of a quantum state in a harmonic potential, based on a given initial state and a specified time-dependent interaction. The primary goal is to compute the dipole moment of the system over time.
 
 * The key components in the code are:
-
+  * Potential Function(`potential`):
+    * This function defines the harmonic potential for a quantum particle. It retuens a value of the form $V(x) = \frac{1}{2}x^{2}$ (i.e., a quadratic potential) for position x.
