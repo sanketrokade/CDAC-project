@@ -25,5 +25,5 @@
 
       * Key Steps in `timeprop`:
         1. Discretization of Space and time: 
-          * The space is discretized into `ncsf` points between `xmin` and `xmax` with spacing `dx`.
-          * Time is divided into `ntim` steps of size `dtim`.
+          - The space is discretized into `ncsf` points between `xmin` and `xmax` with spacing `dx`.
+          - Time is divided into `ntim` steps of size `dtim`.
