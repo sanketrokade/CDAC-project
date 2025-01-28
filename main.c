@@ -85,6 +85,16 @@ int timeprop(int ncsf, double xmin, double xmax, double lmda, int flqchnl, int n
   double tau = 2.0*PI/omga;
 
 
+  printf("dx = %lf \n", dx);
+  printf("length = %lf \n", (xmax-xmin));
+  printf("dt = %lf \n", dtim);
+  printf("totime = %lf \n", totime);
+  printf("tau = %lf \n", tau);
+  printf("omega = %lf \n", omga);
+  printf("epsln = %lf \n", epsln);
+  printf("tchnl = %d \n", tchnl);
+
+
   double **hmt = (double**)calloc(ncsf,sizeof(double*));
   
   for (int i=0; i<ncsf; i++){
@@ -92,7 +102,7 @@ int timeprop(int ncsf, double xmin, double xmax, double lmda, int flqchnl, int n
   }
 
 
-  // kinetic 
+  // kinetic energy 
   for(int k=0; k<ncsf; k++){
     hmt[k][k] = (PI*PI)/(6.0*dx*dx);
 
@@ -103,28 +113,15 @@ int timeprop(int ncsf, double xmin, double xmax, double lmda, int flqchnl, int n
   }
 
 
-  printf("kinetic energy\n");
+  FILE *file = fopen("./result/kinetic.txt","w");  
   for(int i=0; i<ncsf; i++){
     for(int j=0; j<ncsf; j++){
-       	printf("%e ",hmt[i][j]);
+	fprintf(file,"%e ",hmt[i][j]);
     }	  
-    printf("\n");
+    fprintf(file,"\n");
   }
-  printf("\n");
 
 
-
-//  // kinetic 
-//  for(int k=0; k<ncsf; k++){
-//    hmt[k][k] = (PI*PI)/(6.0*dx*dx);
-//
-//    for(int j=0; j<k-1; j++){	    
-//      hmt[k][j] = (pow(-1,(k-j)))/((k-j)*(k-j)*dx*dx);
-//      hmt[j][k] = hmt[k][j];
-//    }
-//  }	
-
-  
   for(int i=0; i<ncsf; i++){
     for(int j=0; j<ncsf; j++){
 	      hmt[i][j] = hmt[i][j]/10000.0;
@@ -149,16 +146,6 @@ int timeprop(int ncsf, double xmin, double xmax, double lmda, int flqchnl, int n
   }
 
 
-  
-//  for(int i=0; i<ncsf; i++){
-//    for(int j=0; j<ncsf; j++){
-//       	printf("%e ",hmt[i][j]);
-//    }	  
-//    printf("\n");
-//  }
-
-
-
   double *h; 
   h = (double *)calloc(ncsf*ncsf,sizeof(double));
   
@@ -169,27 +156,20 @@ int timeprop(int ncsf, double xmin, double xmax, double lmda, int flqchnl, int n
   }
 
 
-  double *W = (double *)calloc(ncsf,sizeof(double));  
-  double *work = (double *)calloc(ncsf,sizeof(double));
+  double *eig = (double *)calloc(ncsf,sizeof(double));  
   int info;
 
-  info = LAPACKE_dsyev(LAPACK_ROW_MAJOR, 'V', 'U', ncsf, h, ncsf, W);
+  info = LAPACKE_dsyev(LAPACK_ROW_MAJOR, 'V', 'U', ncsf, h, ncsf, eig);
+
 
   if (info != 0) {
       printf("Eror in LAPACKE_dsyev: %d\n",info);
 //      free(h);
-      free(W);
-      free(work);
+//      free(W);
       return -1;
   }
   
-  printf("\n");
-  printf("Eigenvalues: \n");
-  for(int i=0; i<ncsf; i++){
-      printf("%e ",W[i]);
-  }
-  printf("\n");
-
+  
 
   for(int i=0; i<ncsf; i++){
     for(int j=0; j<ncsf; j++){
@@ -198,32 +178,31 @@ int timeprop(int ncsf, double xmin, double xmax, double lmda, int flqchnl, int n
   }
 
 
-  printf("\n");
-  printf("Eigenvector: \n");
-  for(int i=0; i<ncsf; i++){
-    for(int j=0; j<ncsf; j++){
-	printf("%e ",hmt[i][j]);
-    }	  
-    printf("\n");
-  }
+//  file = fopen("./result/hmtafter.txt","w");  
+//  for(int i=0; i<ncsf; i++){
+//    for(int j=0; j<ncsf; j++){
+//	fprintf(file,"%e ",hmt[i][j]);
+//    }	  
+//    fprintf(file,"\n");
+//  }
+
 
   double complex *cofi = (double complex*)calloc(nfloq, sizeof(double complex));
 
   for (int i=0; i<ncsf; i++){
-    cofi[inzr-1+i] = hmt[i][istate];
+    cofi[inzr+i] = hmt[i][istate];
   }  
   
-  
-  printf("%d %d %d \n", nfloq, tchnl, inzr);
+
+//  printf("nfloq = %d, tchnl = %d, inzr = %d \n", nfloq, tchnl, inzr);
 
 
-  FILE *file = fopen("./result/cofi.txt","w");  
-  for(int i=0; i<nfloq; i++){
-    fprintf(file,"%e %e\n",creal(cofi[i]), cimag(cofi[i]));
-  }
-  fclose(file);  
-  
-  
+//  file = fopen("./result/iniwav.txt","w");  
+//  for(int i=0; i<nfloq; i++){
+//    fprintf(file,"%e %e\n",creal(cofi[i]), cimag(cofi[i]));
+//  }
+//  fclose(file);  
+
   double complex **cumt1 = calloc_2d_array_complex(ncsf, ncsf);
   double complex **cumt2 = calloc_2d_array_complex(ncsf, ncsf);
 
@@ -231,22 +210,24 @@ int timeprop(int ncsf, double xmin, double xmax, double lmda, int flqchnl, int n
   
   
   for(int i=0; i<ncsf; i++){
-    double complex exevl = cexp(com1*W[i]);
+    double complex exevl = cexp(com1*eig[i]);
     for(int j=0; j<ncsf; j++){
       cumt1[i][j] = exevl*hmt[j][i];
     }  
   }
+ 
+  free(eig);
 
   copy_matrix_real_to_complex(ncsf, hmt, cumt2); 
   
-  file = fopen("./result/cumt2.txt","w");  
-  for(int i=0; i<ncsf; i++){
-    for(int j=0; j<ncsf; j++){
-        fprintf(file,"%7.5e ",creal(cumt1[i][j]));
-    }
-    fprintf(file,"\n");
-  }
-  fclose(file);  
+//  file = fopen("./result/cumt2.txt","w");  
+//  for(int i=0; i<ncsf; i++){
+//    for(int j=0; j<ncsf; j++){
+//        fprintf(file,"%7.5e ",creal(cumt1[i][j]));
+//    }
+//    fprintf(file,"\n");
+//  }
+//  fclose(file);  
   
   double complex **exhm = calloc_2d_array_complex(ncsf, ncsf);
 
@@ -272,14 +253,14 @@ int timeprop(int ncsf, double xmin, double xmax, double lmda, int flqchnl, int n
               ncsf, ncsf, ncsf, &alpha, h2, ncsf, 
               h1, ncsf, &beta, h3, ncsf);
 
-  file = fopen("./result/exhm.txt","w");  
-  for(int i=0; i<ncsf; i++){
-    for(int j=0; j<ncsf; j++){
-        fprintf(file,"%7.5e ",creal(h3[j*ncsf+i]));
-    }
-    fprintf(file,"\n");
-  }
-  fclose(file); 
+//  file = fopen("./result/exhm.txt","w");  
+//  for(int i=0; i<ncsf; i++){
+//    for(int j=0; j<ncsf; j++){
+//        fprintf(file,"%7.5e ",creal(h3[j*ncsf+i]));
+//    }
+//    fprintf(file,"\n");
+//  }
+//  fclose(file); 
 
   for(int i=0; i<ncsf; i++){
     for(int j=0; j<ncsf; j++){
@@ -287,15 +268,15 @@ int timeprop(int ncsf, double xmin, double xmax, double lmda, int flqchnl, int n
     }
   }
 
-  file = fopen("./result/exhml.txt","w");  
-  for(int i=0; i<ncsf; i++){
-    for(int j=0; j<ncsf; j++){
-        //fprintf(file,"%7.5e ",creal(h3[j*ncsf+i]));
-        fprintf(file,"%7.5e ",creal(exhm[i][j]));
-    }
-    fprintf(file,"\n");
-  }
-  fclose(file); 
+//  file = fopen("./result/exhml.txt","w");  
+//  for(int i=0; i<ncsf; i++){
+//    for(int j=0; j<ncsf; j++){
+//        //fprintf(file,"%7.5e ",creal(h3[j*ncsf+i]));
+//        fprintf(file,"%7.5e ",creal(exhm[i][j]));
+//    }
+//    fprintf(file,"\n");
+//  }
+//  fclose(file); 
 
 
   for (int i = 0; i < ncsf; i++){
@@ -307,7 +288,9 @@ int timeprop(int ncsf, double xmin, double xmax, double lmda, int flqchnl, int n
   for(int i=0; i<ncsf; i++){
     cumt1[i][i] = cexp(-lmda*cpm[i]*dtim);
   }
-  
+ 
+  free(cpm);
+
   copy_matrix_complex_to_complex(ncsf, exhm, cumt2);
 
   
@@ -332,19 +315,15 @@ int timeprop(int ncsf, double xmin, double xmax, double lmda, int flqchnl, int n
   }
    
   
-  file = fopen("./result/exhml.txt","w");  
-  for(int i=0; i<ncsf; i++){
-    for(int j=0; j<ncsf; j++){
-        fprintf(file,"%7.5e ",creal(h3[j*ncsf+i]));
-    }
-    fprintf(file,"\n");
-  }
-  fclose(file); 
+//  file = fopen("./result/exhml.txt","w");  
+//  for(int i=0; i<ncsf; i++){
+//    for(int j=0; j<ncsf; j++){
+//        fprintf(file,"%7.5e ",creal(exhm[i][j]));
+//    }
+//    fprintf(file,"\n");
+//  }
+//  fclose(file); 
 
-
-
-  //free(h);
-  //free(W); free(work);
 
   free_2d_array_complex(cumt1, ncsf); free_2d_array_complex(cumt2, ncsf);
 
@@ -361,23 +340,24 @@ int timeprop(int ncsf, double xmin, double xmax, double lmda, int flqchnl, int n
   int findx;
   
   for(int i=0; i<tchnl; i++){
-    findx = -(tchnl + 2)/2 + i;
+    findx = -(tchnl + 1)/2 + (i+1);
     com1 = -I*omga*0.5*dtim*findx;
     for(int j = 0; j<tchnl; j++){
       cumt1[i][j] = sqrt(2.0/(tchnl+1.0))*sin((i+1)*(j+1)*PI/(tchnl+1.0))*cexp(com1);
     }
   } 
 
-  file = fopen("./result/tchnl.txt","w");  
-  for(int i=0; i<tchnl; i++){
-    for(int j=0; j<tchnl; j++){
-        fprintf(file,"%7.5e ",creal(cumt1[i][j]));
-    }
-    fprintf(file,"\n");
-  }
-  fclose(file); 
+//  file = fopen("./result/tchnl.txt","w");  
+//  for(int i=0; i<tchnl; i++){
+//    for(int j=0; j<tchnl; j++){
+//        fprintf(file,"%7.5e ",creal(cumt1[i][j]));
+//    }
+//    fprintf(file,"\n");
+//  }
+//  fclose(file); 
 
-   
+
+  
 // ================== Time Propagation starts =======================
   double complex *coff = (double complex*)calloc(nfloq, sizeof(double complex));
   double complex *cofh = (double complex*)calloc(ncsf, sizeof(double complex));
@@ -399,7 +379,7 @@ int timeprop(int ncsf, double xmin, double xmax, double lmda, int flqchnl, int n
 
 // ------------- time loop starts ---------------- //
 
-  for(int itim = 0; itim<5; itim++){
+  for(int itim = 0; itim<ntim; itim++){
        
       time = itim*dtim;
       epls = epsln*sin((PI*time)/totime)*sin((PI*time)/totime);
@@ -409,7 +389,7 @@ int timeprop(int ncsf, double xmin, double xmax, double lmda, int flqchnl, int n
         findx = -(tchnl + 2)/2 + i;
 
         for (int j=0; j<ncsf; j++){
-            coff[n1] = cofi[inzr-1+j]*cexp(findx*I*omga*time);
+            coff[n1] = cofi[inzr+j]*cexp(findx*I*omga*time);
             n1++;
         }
       }
@@ -417,10 +397,10 @@ int timeprop(int ncsf, double xmin, double xmax, double lmda, int flqchnl, int n
 // --------------------------------------------- 
 
       n1 = 0; eff=0.0;
-      for (int i = 0; i < nfloq; i++) {cofi[i] = CMPLX(0.0,0.0);}
+      for (int i = 0; i < nfloq; i++) cofi[i] = CMPLX(0.0,0.0);
 
       for (int i=0; i<tchnl; i++){
-        eff = epls*cos(i*PI/(tchnl+1)); 
+        eff = epls*cos((i+1)*PI/(tchnl+1)); 
         for (int j=0; j<ncsf; j++){
             csum=CMPLX(0.0,0.0);  
             for (int k=0; k<tchnl; k++){
@@ -431,11 +411,10 @@ int timeprop(int ncsf, double xmin, double xmax, double lmda, int flqchnl, int n
         }
       }
 
-
 // ------------------ exhm ------------------
 
       n1 = 0; eff=0;
-      for (int i = 0; i < nfloq; i++) {coff[i] = CMPLX(0.0,0.0);}
+      for (int i = 0; i < nfloq; i++) coff[i] = CMPLX(0.0,0.0);
 
       for (int ii=0; ii<tchnl; ii++){
                
@@ -451,7 +430,7 @@ int timeprop(int ncsf, double xmin, double xmax, double lmda, int flqchnl, int n
              }	  
           }
           
-          for (int i = 0; i < ncsf; i++) {h33[i] = CMPLX(0.0,0.0);}
+          for (int i = 0; i < ncsf; i++) h33[i] = CMPLX(0.0,0.0);
 
           cblas_zgemm(CblasColMajor, CblasNoTrans, CblasNoTrans,
                       ncsf, 1, ncsf, &alpha, h11, ncsf, 
@@ -463,21 +442,13 @@ int timeprop(int ncsf, double xmin, double xmax, double lmda, int flqchnl, int n
 
       }
 
-
-      file = fopen("./result/coff.txt","w");  
-      for(int i=0; i<nfloq; i++){
-          fprintf(file,"%7.5e %7.5e \n",creal(coff[i]),cimag(coff[i]));
-      }
-      fclose(file); 
-
-  
-
 // -------------------------------------
+
       n1 = 0; eff=0;
-      for (int i = 0; i < nfloq; i++) {cofi[i] = CMPLX(0.0,0.0);}
+      for (int i = 0; i < nfloq; i++) cofi[i] = CMPLX(0.0,0.0);
 
       for (int i=0; i<tchnl; i++){
-          eff = epls*cos(i*PI/(tchnl+1));
+          eff = epls*cos((i+1)*PI/(tchnl+1));
           for (int j=0; j<ncsf; j++){
               cofi[n1] = cexp(com1*zdipole[j]*eff)*coff[n1];
               n1++;
@@ -485,7 +456,7 @@ int timeprop(int ncsf, double xmin, double xmax, double lmda, int flqchnl, int n
       }
        
       n1 = 0;
-      for (int i = 0; i < nfloq; i++) {coff[i] = CMPLX(0.0,0.0);}
+      for (int i = 0; i < nfloq; i++) coff[i] = CMPLX(0.0,0.0);
 
       for (int j=0; j<tchnl; j++){
           for (int i=0; i<ncsf; i++){
@@ -498,44 +469,49 @@ int timeprop(int ncsf, double xmin, double xmax, double lmda, int flqchnl, int n
           }
       }
 
-      file = fopen("./result/cofh.txt","w");  
-      for(int i=0; i<nfloq; i++){
-          fprintf(file,"%7.5e %7.5e \n",creal(coff[i]),cimag(coff[i]));
-      }
-      fclose(file); 
+//      file = fopen("./result/cofh.txt","w");  
+//      for(int i=0; i<nfloq; i++){
+//          fprintf(file,"%7.5e %7.5e \n",creal(coff[i]),cimag(coff[i]));
+//      }
+//      fclose(file); 
 
 
-      for (int i = 0; i < nfloq; i++) {cofi[i] = CMPLX(0.0,0.0);}
+      for (int i = 0; i < nfloq; i++) cofi[i] = CMPLX(0.0,0.0);
 
       for (int i=0; i<nfloq; i++){
         cofi[i] = coff[i];
       }
       
-
-      for (int i = 0; i < ncsf; i++) {cofh[i] = CMPLX(0.0,0.0);}
+      for (int i = 0; i < ncsf; i++) cofh[i] = CMPLX(0.0,0.0);
 
       for (int i=0; i<ncsf; i++){
-        cofh[i] = cofi[inzr+i];
+        cofh[i] = coff[inzr+i];
       }
     
-      file = fopen("./result/cofh.txt","w");  
-      for(int i=0; i<ncsf; i++){
-          fprintf(file,"%7.5e %7.5e \n",creal(cofh[i]),cimag(cofh[i]));
-      }
-      fclose(file); 
+//      file = fopen("./result/cofh.txt","w");  
+//      for(int i=0; i<ncsf; i++){
+//          fprintf(file,"%7.5e %7.5e \n",creal(cofh[i]),cimag(cofh[i]));
+//      }
+//      fclose(file); 
 
       dipole = CMPLX(0.0,0.0);
       for (int i=0; i<ncsf; i++){
         dipole += conj(cofh[i])*epls*zdipole[i]*cos(omga*time)*cofh[i];
       }
-//      printf("%e %e\n",creal(dipole),cimag(dipole));
 
-
-      fprintf(timefile,"%e %e %e %e \n",time/tau, epls*cos(omga*time),creal(dipole),cimag(dipole)); 
+      fprintf(timefile,"%e %e %e %e \n",time/tau, epls*cos(omga*time), creal(dipole), cimag(dipole)); 
 
 
   }   // time loop ends
   fclose(timefile);  
+
+
+// free memory
+  free(coff); free(cofi); free(cofh);
+  free(h11); free(h22); free(h33);
+  free(zdipole);
+
+  free_2d_array_complex(cumt1, tchnl); 
 
   return 0;
 }
@@ -548,13 +524,15 @@ int main(){
   double xmin, xmax, epsln, omga;
   double tau, totime, lmda;
 
-  ncsf = 10; flqchnl = 10; xmin = -3.0 ; xmax = 3.0;
-  epsln = 0.01; omga = 0.01; lmda = 0.0;
-  noptc = 5; istate = 0;
+  ncsf = 100; flqchnl = 5; xmin = 0 ; xmax = 10.0;
+  epsln = 0.5; omga = 0.5; lmda = 0.0;
+  noptc = 5; istate = 1;           //keep istate as 1, 0 giving wrong result
   
-  tau = PI/omga;
+  tau = 2.0*PI/omga;
   totime = noptc*tau;
   ntime = (int)totime;
+  
+  printf("ntime = %d, totime = %lf, tau = %lf\n",ntime, totime, tau);
 
   timeprop(ncsf, xmin, xmax, lmda, flqchnl, noptc, istate, totime, ntime, omga, epsln);
 
