@@ -27,3 +27,11 @@
         * Discretization of Space and time: 
           * The space is discretized into `ncsf` points between `xmin` and `xmax` with spacing `dx`.
           * Time is divided into `ntim` steps of size `dtim`.
+        * Kinetic Energy Matrix (hmt):
+          * Constructed using the second derivative approximation in finite difference: 
+          $$ \[ T_{i,j} = 
+          \begin{cases} 
+          \frac{6 \, dx^2}{\pi^2 (i-j)^2} (-1)^{i-j}, & \text{for } i \neq j \\
+          dx^2, & \text{for } i = j
+          \end{cases}
+          \] $$
