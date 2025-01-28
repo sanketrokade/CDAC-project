@@ -377,7 +377,7 @@ int timeprop(int ncsf, double xmin, double xmax, double lmda, int flqchnl, int n
   FILE *timefile = fopen("./result/finalresult.txt","w"); 
 
 
-// ------------- time loop starts ---------------- //
+// ------------- time propagation loop starts ---------------- //
 
   for(int itim = 0; itim<ntim; itim++){
        
