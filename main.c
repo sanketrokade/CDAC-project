@@ -2,7 +2,7 @@
 #include<stdlib.h>
 #include<math.h>
 #include<complex.h>
-
+#include<omp.h>
 #include<lapacke.h>
 #include<cblas.h>
 
@@ -524,7 +524,7 @@ int main(){
   double xmin, xmax, epsln, omga;
   double tau, totime, lmda;
 
-  ncsf = 100; flqchnl = 5; xmin = 0 ; xmax = 10.0;
+  ncsf =1000; flqchnl = 5; xmin = 0 ; xmax = 10.0;
   epsln = 0.5; omga = 0.5; lmda = 0.0;
   noptc = 5; istate = 1;           //keep istate as 1, 0 giving wrong result
   
@@ -533,8 +533,11 @@ int main(){
   ntime = (int)totime;
   
   printf("ntime = %d, totime = %lf, tau = %lf\n",ntime, totime, tau);
+  float start=omp_get_wtime();
 
   timeprop(ncsf, xmin, xmax, lmda, flqchnl, noptc, istate, totime, ntime, omga, epsln);
 
+  float stop=omp_get_wtime();
+  printf("time taken:%f",stop-start);
   return 0;
 }
