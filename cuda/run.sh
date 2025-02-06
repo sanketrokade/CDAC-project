@@ -4,4 +4,4 @@ mpicc -c main_MPI_cuda.c -o exe.o -fopenmp -lm -lblas -llapacke -I/usr/local/cud
 
 mpicc -o exe_cuda exe.o cuda_functions.o -lcusolver -lcublas -lcudart -llapacke -lblas -lm -lmpi -fopenmp -L/usr/local/cuda-12.8/lib64
 
-mpirun -np 5 ./exe_cuda
+mpirun -np 8 ./exe_cuda

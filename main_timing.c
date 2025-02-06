@@ -64,7 +64,7 @@ void copy_matrix_real_to_complex(int ncsf, double **source, double complex **des
 }
 
 // Time propagation function
-int timeprop(int ncsf, double xmin, double xmax, double lmda, int flqchnl, int noptc, 
+int timeprop(int ncsf, double xmin, double xmax, int flqchnl, int noptc, 
              int istate, double totime, int ntim, double omga, double epsln){
 
   double mass = 10000.0; 
@@ -95,6 +95,7 @@ int timeprop(int ncsf, double xmin, double xmax, double lmda, int flqchnl, int n
 
   double startTime, endTime, serialTime;
 
+  FILE *file;
 
   double **hmt = (double**)calloc(ncsf,sizeof(double*));
   
@@ -107,19 +108,10 @@ int timeprop(int ncsf, double xmin, double xmax, double lmda, int flqchnl, int n
   for(int k=0; k<ncsf; k++){
     hmt[k][k] = (PI*PI)/(6.0*dx*dx);
 
-    for(int j=0; j<k; j++){	    
+    for(int j=0; j<k; j++){	
       hmt[k][j] = (pow(-1.0,(k-j)))/((k-j)*(k-j)*dx*dx);
       hmt[j][k] = hmt[k][j];
     }
-  }
-
-
-  FILE *file = fopen("./result/kinetic.txt","w");  
-  for(int i=0; i<ncsf; i++){
-    for(int j=0; j<ncsf; j++){
-	    fprintf(file,"%e ",hmt[i][j]);
-    }	  
-    fprintf(file,"\n");
   }
 
 
@@ -131,19 +123,14 @@ int timeprop(int ncsf, double xmin, double xmax, double lmda, int flqchnl, int n
 
 
 
-  double *zdipole, *cpm;  
+  double *zdipole;  
   zdipole = (double *)calloc(ncsf,sizeof(double));
-  cpm = (double *)calloc(ncsf,sizeof(double));
 
   for(int i=0; i<ncsf; i++){
     double x = xmin + i*dx;
     zdipole[i] = x;
      
     hmt[i][i] = hmt[i][i] + potential(x);
-
-    if (abs(x) > (xmax-30.0)){
-      cpm[i] = (abs(x)-(xmax-30.0))*(abs(x)-(xmax-30.0));
-    }
   }
 
 
@@ -186,44 +173,18 @@ int timeprop(int ncsf, double xmin, double xmax, double lmda, int flqchnl, int n
   }
 
 
-
- file = fopen("./result/hmtafter_serial.txt","w");  
- for(int i=0; i<ncsf; i++){
-   for(int j=0; j<ncsf; j++){
-	     fprintf(file,"%e ",hmt[i][j]);
-   }	  
-   fprintf(file,"\n");
- }
-
-  file = fopen("./result/eigenvalue_serial.txt","w");  
-  for(int i=0; i<ncsf; i++){
-    fprintf(file,"%e \n",eig[i]);
-  }
-
-
   double complex *cofi = (double complex*)calloc(nfloq, sizeof(double complex));
 
 // skip inzr rows and insert values upto ncsf rows
   for (int i=0; i<ncsf; i++){
     cofi[inzr+i] = hmt[i][istate]; 
   }  
-  
-
-//  printf("nfloq = %d, tchnl = %d, inzr = %d \n", nfloq, tchnl, inzr);
-
-
-//  file = fopen("./result/iniwav.txt","w");  
-//  for(int i=0; i<nfloq; i++){
-//    fprintf(file,"%e %e\n",creal(cofi[i]), cimag(cofi[i]));
-//  }
-//  fclose(file);  
+   
 
   double complex **cumt1 = calloc_2d_array_complex(ncsf, ncsf);
   double complex **cumt2 = calloc_2d_array_complex(ncsf, ncsf);
 
-  double complex com1 = -I*dtim;  
-  
-  
+  double complex com1 = -I*dtim;    
   for(int i=0; i<ncsf; i++){
     double complex exevl = cexp(com1*eig[i]);
     for(int j=0; j<ncsf; j++){
@@ -234,15 +195,6 @@ int timeprop(int ncsf, double xmin, double xmax, double lmda, int flqchnl, int n
   free(eig);
 
   copy_matrix_real_to_complex(ncsf, hmt, cumt2); 
-  
-//  file = fopen("./result/cumt2.txt","w");  
-//  for(int i=0; i<ncsf; i++){
-//    for(int j=0; j<ncsf; j++){
-//        fprintf(file,"%7.5e ",creal(cumt1[i][j]));
-//    }
-//    fprintf(file,"\n");
-//  }
-//  fclose(file);  
   
   double complex **exhm = calloc_2d_array_complex(ncsf, ncsf);
 
@@ -272,68 +224,6 @@ int timeprop(int ncsf, double xmin, double xmax, double lmda, int flqchnl, int n
   serialTime = endTime - startTime;
   printf("Time taken in blas matrix multiplication 1 = %lf sec\n", serialTime); 
 
-//  file = fopen("./result/exhm.txt","w");  
-//  for(int i=0; i<ncsf; i++){
-//    for(int j=0; j<ncsf; j++){
-//        fprintf(file,"%7.5e ",creal(h3[j*ncsf+i]));
-//    }
-//    fprintf(file,"\n");
-//  }
-//  fclose(file); 
-
-  for(int i=0; i<ncsf; i++){
-    for(int j=0; j<ncsf; j++){
-      exhm[i][j] = h3[j*ncsf+i];
-    }
-  }
-
-//  file = fopen("./result/exhml.txt","w");  
-//  for(int i=0; i<ncsf; i++){
-//    for(int j=0; j<ncsf; j++){
-//        //fprintf(file,"%7.5e ",creal(h3[j*ncsf+i]));
-//        fprintf(file,"%7.5e ",creal(exhm[i][j]));
-//    }
-//    fprintf(file,"\n");
-//  }
-//  fclose(file); 
-
-
-  for (int i = 0; i < ncsf; i++){
-    for (int j=0; j<ncsf; j++){
-        cumt1[i][j] = CMPLX(0.0,0.0); 
-    }
-  } 
-
-  for(int i=0; i<ncsf; i++){
-    cumt1[i][i] = cexp(-lmda*cpm[i]*dtim);
-  }
- 
-  free(cpm);
-
-  copy_matrix_complex_to_complex(ncsf, exhm, cumt2);
-
-  
-  for(int i=0; i<ncsf; i++){
-    for(int j=0; j<ncsf; j++){
-    	h1[j*ncsf+i] = cumt1[i][j];
-      h2[j*ncsf+i] = cumt2[i][j];
-    }	  
-  }
-
-
-  startTime = omp_get_wtime();
-  cblas_zgemm(CblasColMajor, CblasNoTrans, CblasNoTrans,
-              ncsf, ncsf, ncsf, &alpha, h2, ncsf, 
-              h1, ncsf, &beta, h3, ncsf);
-  endTime = omp_get_wtime();
-
-  serialTime = endTime - startTime;
-  printf("Time taken in blas matrix multiplication 2 = %lf sec\n", serialTime); 
-
-//  printf("Reached \n");
-//  exit(0);
-
-
 
 // ------ This exhm will be used ahead ---------
   for(int i=0; i<ncsf; i++){
@@ -341,16 +231,6 @@ int timeprop(int ncsf, double xmin, double xmax, double lmda, int flqchnl, int n
       exhm[i][j] = h3[j*ncsf+i];
     }
   }
-   
-  
-//  file = fopen("./result/exhml.txt","w");  
-//  for(int i=0; i<ncsf; i++){
-//    for(int j=0; j<ncsf; j++){
-//        fprintf(file,"%7.5e ",creal(exhm[i][j]));
-//    }
-//    fprintf(file,"\n");
-//  }
-//  fclose(file); 
 
 
   free_2d_array_complex(cumt1, ncsf); free_2d_array_complex(cumt2, ncsf);
@@ -360,8 +240,6 @@ int timeprop(int ncsf, double xmin, double xmax, double lmda, int flqchnl, int n
         free(hmt[i]);
   }
   free(hmt);
-
-
 
 //-------------------------------------------------------------------------
   cumt1 = calloc_2d_array_complex(tchnl, tchnl);
@@ -374,17 +252,6 @@ int timeprop(int ncsf, double xmin, double xmax, double lmda, int flqchnl, int n
       cumt1[i][j] = sqrt(2.0/(tchnl+1.0))*sin((i+1)*(j+1)*PI/(tchnl+1.0))*cexp(com1);
     }
   } 
-
-//  file = fopen("./result/tchnl.txt","w");  
-//  for(int i=0; i<tchnl; i++){
-//    for(int j=0; j<tchnl; j++){
-//        fprintf(file,"%7.5e ",creal(cumt1[i][j]));
-//    }
-//    fprintf(file,"\n");
-//  }
-//  fclose(file); 
-
-
   
 // ================== Time Propagation starts =======================
   double complex *coff = (double complex*)calloc(nfloq, sizeof(double complex));
@@ -407,7 +274,6 @@ int timeprop(int ncsf, double xmin, double xmax, double lmda, int flqchnl, int n
 
 // ------------- time propagation loop starts ---------------- //
 
-
   for(int itim = 0; itim<ntim; itim++){
       startTime = omp_get_wtime(); 
 
@@ -424,11 +290,6 @@ int timeprop(int ncsf, double xmin, double xmax, double lmda, int flqchnl, int n
         }
       }
       
-      file = fopen("./result/cofh.txt","w");  
-      for(int i=0; i<nfloq; i++){
-         fprintf(file,"%7.5e %7.5e \n",creal(cofi[i]),cimag(cofi[i]));
-      }
-      fclose(file);  
 // --------------------------------------------- 
 
       n1 = 0; eff=0.0;
@@ -478,13 +339,6 @@ int timeprop(int ncsf, double xmin, double xmax, double lmda, int flqchnl, int n
       }
 
 // -------------------------------------
-      file = fopen("./result/coff_exhm_serial.txt","w");  
-      for(int i=0; i<nfloq; i++){
-          fprintf(file,"%7.5e %7.5e \n",creal(coff[i]),cimag(coff[i]));
-      }
-      fclose(file); 
-
-
 
       n1 = 0; eff=0;
       for (int i = 0; i < nfloq; i++) cofi[i] = CMPLX(0.0,0.0);
@@ -510,13 +364,6 @@ int timeprop(int ncsf, double xmin, double xmax, double lmda, int flqchnl, int n
               n1++;
           }
       }
-
-
-//      file = fopen("./result/cofh.txt","w");  
-//      for(int i=0; i<nfloq; i++){
-//          fprintf(file,"%7.5e %7.5e \n",creal(coff[i]),cimag(coff[i]));
-//      }
-//      fclose(file); 
 
 
       for (int i = 0; i < nfloq; i++) cofi[i] = CMPLX(0.0,0.0);
@@ -569,8 +416,8 @@ int main(){
   double serialTime;
 
 
-  ncsf = 5000; flqchnl = 2; xmin = 0 ; xmax = 10.0;
-  epsln = 0.5; omga = 0.5; lmda = 0.0;
+  ncsf = 1000; flqchnl = 3; xmin = 0 ; xmax = 10.0;
+  epsln = 0.5; omga = 0.5; 
   noptc = 5; istate = 1;           //keep istate as 1, 0 giving wrong result
   
   tau = 2.0*PI/omga;
@@ -578,7 +425,7 @@ int main(){
   ntime = (int)totime;
 
   double startTime = omp_get_wtime();
-  timeprop(ncsf, xmin, xmax, lmda, flqchnl, noptc, istate, totime, ntime, omga, epsln);
+  timeprop(ncsf, xmin, xmax, flqchnl, noptc, istate, totime, ntime, omga, epsln);
   double endTime = omp_get_wtime();
 
   serialTime = endTime - startTime;

@@ -146,3 +146,28 @@ void cuda_complexMatrixMultiply(const cuDoubleComplex *A, const cuDoubleComplex 
     cudaFree(d_C);
     cublasDestroy(handle);
 }
+
+void cuda_complexMatrixMultiply_col(const cuDoubleComplex *A, const cuDoubleComplex *B, cuDoubleComplex *C, int n) {
+    cublasHandle_t handle;
+    cublasCreate(&handle);
+    
+    cuDoubleComplex *d_A, *d_B, *d_C;
+    cudaMalloc((void **)&d_A, n * n * sizeof(cuDoubleComplex));
+    cudaMalloc((void **)&d_B, n * 1 * sizeof(cuDoubleComplex));
+    cudaMalloc((void **)&d_C, n * 1 * sizeof(cuDoubleComplex));
+    
+    cublasSetMatrix(n, n, sizeof(cuDoubleComplex), A, n, d_A, n);
+    cublasSetMatrix(n, 1, sizeof(cuDoubleComplex), B, n, d_B, n);
+    
+    cuDoubleComplex alpha = make_cuDoubleComplex(1.0, 0.0);
+    cuDoubleComplex beta = make_cuDoubleComplex(0.0, 0.0);
+
+    cublasZgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, n, 1, n, &alpha, d_A, n, d_B, n, &beta, d_C, n);
+    
+    cublasGetMatrix(n, 1, sizeof(cuDoubleComplex), d_C, n, C, n);
+    
+    cudaFree(d_A);
+    cudaFree(d_B);
+    cudaFree(d_C);
+    cublasDestroy(handle);
+}
