@@ -81,7 +81,7 @@ int main(){
   double xmin, xmax, epsln, omga;
   double tau, totime, lmda;
 
-  ncsf = 7000; flqchnl = 3; xmin = 0 ; xmax = 10.0;
+  ncsf = 3000; flqchnl = 3; xmin = 0 ; xmax = 10.0;
   epsln = 0.5; omga = 0.5; lmda = 0.0;
   noptc = 5; istate = 1;                             // keep istate as 1, 0 giving wrong result
   
