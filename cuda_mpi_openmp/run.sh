@@ -1,4 +1,4 @@
-nvcc -c cuda_functions.cu -o cuda_functions.o -lcusolver -lcublas -I/usr/local/cuda-12.8/include/
+nvcc -arch=sm_86 -Wno-deprecated-gpu-targets -c cuda_functions.cu -o cuda_functions.o -lcusolver -lcublas -I/usr/local/cuda-12.8/include/
 
 mpicc -c main_MPI_cuda_openmp.c -o exe.o -fopenmp -lm -lblas -llapacke -I/usr/local/cuda-12.8/include/
 

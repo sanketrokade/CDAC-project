@@ -60,3 +60,20 @@
             - The Floquet matrices.
             - The complex Hamiltonian propagator (`exhm`).
           - This evolution includes the effects of an oscillating external field.
+
+
+* Profiling using Nsight Systems
+  * `nsys profile --stats=true --trace=cuda,nvtx,mpi,openmp -o profile_output mpirun -np 8 ./exe_cuda`
+    * nsys profile → Runs Nsight Systems profiler.
+    * --stats=true → Displays a summary of profiling statistics in the terminal after execution.
+    * --trace=cuda,nvtx,mpi,openmp → Captures profiling data for:
+      * cuda → CUDA kernel launches, memory transfers, etc.
+      * nvtx → NVIDIA Tools Extension (for custom profiling markers).
+      * mpi → MPI communication profiling.
+      * openmp → OpenMP thread execution profiling.
+
+    * -o profile_output → Saves profiling data to a file named profile_output.qdrep.
+    * mpirun -np 8 ./exe_cuda → Runs exe_cuda with 8 MPI processes.
+  * Analyse in GUI
+    * `nsys-ui profile_output.nsys-rep`
+  
