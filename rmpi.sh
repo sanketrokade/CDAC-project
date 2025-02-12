@@ -1,5 +1,5 @@
 mpicc -o exe_pll main_MPI.c -lm -llapacke -lblas -fopenmp
-mpirun -np 8 ./exe_pll 
+#mpirun -np 8 ./exe_pll 
 
 
 #mpicc -g -o exe_pll main_MPI.c -lm -llapacke -lblas -fopenmp

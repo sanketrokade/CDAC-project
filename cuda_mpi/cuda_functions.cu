@@ -20,7 +20,7 @@ void cuda_diagonalize_matrix(double *h_A, int N, double *h_evec, double *h_eval)
         fprintf(stderr, "CUDA malloc failed!\n");
         return;
     }
-    printf("Taseng checking.....\n");
+    
     cudaStat = cudaMalloc((void**)&d_W, N * sizeof(double));
     if (cudaStat != cudaSuccess) {
         fprintf(stderr, "CUDA malloc failed!\n");
