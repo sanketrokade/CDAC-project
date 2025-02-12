@@ -39,7 +39,6 @@ double complex **calloc_2d_array_complex(int rows, int cols) {
     return array;
 }
 
-
 cuDoubleComplex **allocateMatrix(int n) {
     cuDoubleComplex **matrix = (cuDoubleComplex **)malloc(n * sizeof(cuDoubleComplex *));
     for (int i = 0; i < n; i++) {
@@ -47,7 +46,6 @@ cuDoubleComplex **allocateMatrix(int n) {
     }
     return matrix;
 }
-
 
 // Free a dynamic 2D complex array
 void free_2d_array_complex(double complex** array, int rows) {
@@ -74,14 +72,13 @@ void copy_matrix_real_to_complex(int ncsf, double **source, double complex **des
     }
 }
 
-
 int main(){
   int ntim, ncstep, istate, flqchnl;
   int ncsf, noptc;
   double xmin, xmax, epsln, omga;
   double tau, totime, lmda;
 
-  ncsf = 3000; flqchnl = 3; xmin = 0 ; xmax = 10.0;
+  ncsf = 2000; flqchnl = 3; xmin = 0 ; xmax = 10.0;
   epsln = 0.5; omga = 0.5; lmda = 0.0;
   noptc = 5; istate = 1;                             // keep istate as 1, 0 giving wrong result
   
@@ -178,7 +175,6 @@ int main(){
             hmt[j][k] = hmt[k][j];
           }
         }
-
       
         #pragma omp parallel for collapse(2)
         for(int i=0; i<ncsf; i++){
@@ -300,9 +296,7 @@ int main(){
               free(hmt[i]);
         }
         free(hmt);
-      
-      
-      
+            
         //-------------------------------------------------------------------------
         cumt1 = calloc_2d_array_complex(tchnl, tchnl);
         int findx;
