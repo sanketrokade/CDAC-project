@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+ <rdmgr>
+  <timestamp type="u64_t">1739347409</timestamp>
+  <hostname type="string">krypton</hostname>
+  <os type="string">linux</os>
+  <product type="string">Intel® VTune™ Profiler 2025.0.1</product>
+  <buildNumber type="s32_t">629235</buildNumber>
+  <logicalCPUCount type="s32_t">16</logicalCPUCount>
+  <physicalCoreCount type="s32_t">8</physicalCoreCount>
+  <processorPackageCount type="s32_t">1</processorPackageCount>
+  <CPUFrequency type="s64_t">2300000000</CPUFrequency>
+  <CPUFamily type="s32_t">6</CPUFamily>
+  <CPUModel type="s32_t">141</CPUModel>
+  <CPUStepping type="s32_t">1</CPUStepping>
+  <CPUBrandName type="string">11th Gen Intel(R) Core(TM) i7-11800H @ 2.30GHz</CPUBrandName>
+  <isa type="string">avx512</isa>
+  <mpirank type="s32_t">2</mpirank>
+  <collectionTimeBegin type="u64_t">1739347409</collectionTimeBegin>
+  <collectionTimeEnd type="u64_t">1739347450</collectionTimeEnd>
+  <variables>
+   <at type="string">hs</at>
+   <mpirank type="string">2</mpirank>
+  </variables>
+ </rdmgr>
+</root>

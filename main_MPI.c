@@ -65,10 +65,10 @@ int main(){
   int ntim, ncstep, istate, flqchnl;
   int ncsf, noptc;
   double xmin, xmax, epsln, omga;
-  double tau, totime, lmda;
+  double tau, totime;
 
-  ncsf = 5000; flqchnl = 2; xmin = 0 ; xmax = 10.0;
-  epsln = 0.5; omga = 0.5; lmda = 0.0;
+  ncsf = 2000; flqchnl = 3; xmin = 0 ; xmax = 10.0;
+  epsln = 0.5; omga = 0.5;
   noptc = 5; istate = 1;           //keep istate as 1, 0 giving wrong result
   
   tau = 2.0*PI/omga;
@@ -114,9 +114,15 @@ int main(){
   double complex* h33 = (double complex *)calloc(ncsf, sizeof(double complex));
 
   if (rank == 0){
+
+        if (size == tchnl){
+              printf("Process exiting: size == tchnl (%d == %d)\n", size, tchnl);
+              fflush(stdout); // Ensure message is printed before exit
+              MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE); // Ensures all processes exit
+        };
         
         double finalstarttime = omp_get_wtime();
-        
+   
         printf("ncsf = %d \n", ncsf);
         printf("dx = %lf \n", dx);
         printf("length = %lf \n", (xmax-xmin));
@@ -146,14 +152,6 @@ int main(){
             hmt[j][k] = hmt[k][j];
           }
         }
-           
-        FILE *file = fopen("./result/kinetic.txt","w");  
-        for(int i=0; i<ncsf; i++){
-          for(int j=0; j<ncsf; j++){
-	          fprintf(file,"%e ",hmt[i][j]);
-          }	  
-          fprintf(file,"\n");
-        }
         
         for(int i=0; i<ncsf; i++){
           for(int j=0; j<ncsf; j++){
@@ -161,19 +159,14 @@ int main(){
           }	  
         }
             
-        double *zdipole, *cpm;  
+        double *zdipole;  
         zdipole = (double *)calloc(ncsf,sizeof(double));
-        cpm = (double *)calloc(ncsf,sizeof(double));
               
         for(int i=0; i<ncsf; i++){
           double x = xmin + i*dx;
           zdipole[i] = x;
            
           hmt[i][i] = hmt[i][i] + potential(x);
-        
-          if (abs(x) > (xmax-30.0)){
-            cpm[i] = (abs(x)-(xmax-30.0))*(abs(x)-(xmax-30.0));
-          }
         }
                 
         double *h; 
@@ -195,20 +188,7 @@ int main(){
         serialTime = endTime - startTime;
         printf("Time taken in lapack diagonalisation = %lf sec\n", serialTime); 
       
-//      printf("Reached \n");
-//      exit(0);
-      
-      
-        /*
-          if (info != 0) {
-              printf("Error in LAPACKE_dsyev: %d\n",info);
-        //      free(h);
-        //      free(W);
-              return -1;
-          }
-        */  
-          
-      
+     
         for(int i=0; i<ncsf; i++){
           for(int j=0; j<ncsf; j++){
             hmt[i][j] = h[i*ncsf+j];
@@ -216,36 +196,12 @@ int main(){
         }
       
       
-      
-        file = fopen("./result/hmtafter_mpi.txt","w");  
-        for(int i=0; i<ncsf; i++){
-          for(int j=0; j<ncsf; j++){
-        	fprintf(file,"%e ",hmt[i][j]);
-          }	  
-          fprintf(file,"\n");
-        }
-
-        file = fopen("./result/eigenvalue_mpi.txt","w");  
-        for(int i=0; i<ncsf; i++){
-            fprintf(file,"%e \n",eig[i]);
-        }
-      
         double complex *cofi = (double complex*)calloc(nfloq, sizeof(double complex));
       
         // skip inzr rows and insert values upto ncsf rows
         for (int i=0; i<ncsf; i++){
           cofi[inzr+i] = hmt[i][istate]; 
-        }  
-        
-      
-        //  printf("nfloq = %d, tchnl = %d, inzr = %d \n", nfloq, tchnl, inzr);
-      
-      
-        //  file = fopen("./result/iniwav.txt","w");  
-        //  for(int i=0; i<nfloq; i++){
-        //    fprintf(file,"%e %e\n",creal(cofi[i]), cimag(cofi[i]));
-        //  }
-        //  fclose(file);  
+        }   
       
         double complex **cumt1 = calloc_2d_array_complex(ncsf, ncsf);
         double complex **cumt2 = calloc_2d_array_complex(ncsf, ncsf);
@@ -262,17 +218,6 @@ int main(){
         free(eig);
       
         copy_matrix_real_to_complex(ncsf, hmt, cumt2); 
-        
-        //  file = fopen("./result/cumt2.txt","w");  
-        //  for(int i=0; i<ncsf; i++){
-        //    for(int j=0; j<ncsf; j++){
-        //        fprintf(file,"%7.5e ",creal(cumt1[i][j]));
-        //    }
-        //    fprintf(file,"\n");
-        //  }
-        //  fclose(file);  
-        
-//        double complex **exhm = calloc_2d_array_complex(ncsf, ncsf);
         
         double complex *h1, *h2, *h3;
         h1 = (double complex *)calloc(ncsf*ncsf,sizeof(double complex));
@@ -295,85 +240,18 @@ int main(){
       
         serialTime = endTime - startTime;
         printf("Time taken in blas matrix multiplication 1 = %lf sec\n", serialTime); 
-      
-        //  file = fopen("./result/exhm.txt","w");  
-        //  for(int i=0; i<ncsf; i++){
-        //    for(int j=0; j<ncsf; j++){
-        //        fprintf(file,"%7.5e ",creal(h3[j*ncsf+i]));
-        //    }
-        //    fprintf(file,"\n");
-        //  }
-        //  fclose(file); 
-      
-        for(int i=0; i<ncsf; i++){
-          for(int j=0; j<ncsf; j++){
-            exhm[i][j] = h3[j*ncsf+i];
-          }
-        }
-      
-        //  file = fopen("./result/exhml.txt","w");  
-        //  for(int i=0; i<ncsf; i++){
-        //    for(int j=0; j<ncsf; j++){
-        //        //fprintf(file,"%7.5e ",creal(h3[j*ncsf+i]));
-        //        fprintf(file,"%7.5e ",creal(exhm[i][j]));
-        //    }
-        //    fprintf(file,"\n");
-        //  }
-        //  fclose(file); 
-        
-              
-        for (int i = 0; i < ncsf; i++){
-          for (int j=0; j<ncsf; j++){
-              cumt1[i][j] = CMPLX(0.0,0.0); 
-          }
-        } 
-        
-        for(int i=0; i<ncsf; i++){
-          cumt1[i][i] = cexp(-lmda*cpm[i]*dtim);
-        }
-         
-        free(cpm);
-              
-        copy_matrix_complex_to_complex(ncsf, exhm, cumt2);
-              
-        for(int i=0; i<ncsf; i++){
-          for(int j=0; j<ncsf; j++){
-          	h1[j*ncsf+i] = cumt1[i][j];
-            h2[j*ncsf+i] = cumt2[i][j];
-          }	  
-        }
-        
-        
-        startTime = omp_get_wtime();
-        cblas_zgemm(CblasColMajor, CblasNoTrans, CblasNoTrans,
-                    ncsf, ncsf, ncsf, &alpha, h2, ncsf, 
-                    h1, ncsf, &beta, h3, ncsf);
-        endTime = omp_get_wtime();
-        
-        serialTime = endTime - startTime;
-        printf("Time taken in blas matrix multiplication 2 = %lf sec\n", serialTime); 
-        
-         
+
         // ------ This exhm will be used ahead ---------
         for(int i=0; i<ncsf; i++){
           for(int j=0; j<ncsf; j++){
             exhm[i][j] = h3[j*ncsf+i];
           }
         }
+      
 
-        //correct 
         for(int i=1; i<size; i++){
-          MPI_Send(h3, ncsf*ncsf, MPI_C_DOUBLE_COMPLEX, i, 1, MPI_COMM_WORLD);
+          MPI_Send(h3, ncsf*ncsf, MPI_DOUBLE_COMPLEX, i, 1, MPI_COMM_WORLD);
         } 
-
-        //  file = fopen("./result/exhml.txt","w");  
-        //  for(int i=0; i<ncsf; i++){
-        //    for(int j=0; j<ncsf; j++){
-        //        fprintf(file,"%7.5e ",creal(exhm[i][j]));
-        //    }
-        //    fprintf(file,"\n");
-        //  }
-        //  fclose(file); 
       
       
         free_2d_array_complex(cumt1, ncsf); free_2d_array_complex(cumt2, ncsf);
@@ -397,24 +275,9 @@ int main(){
             cumt1[i][j] = sqrt(2.0/(tchnl+1.0))*sin((i+1)*(j+1)*PI/(tchnl+1.0))*cexp(com1);
           }
         }
-      
-        //  file = fopen("./result/tchnl.txt","w");  
-        //  for(int i=0; i<tchnl; i++){
-        //    for(int j=0; j<tchnl; j++){
-        //        fprintf(file,"%7.5e ",creal(cumt1[i][j]));
-        //    }
-        //    fprintf(file,"\n");
-        //  }
-        //  fclose(file); 
               
         // ================== Time Propagation starts =======================
         double complex* coff = (double complex*)calloc(nfloq, sizeof(double complex));
-        // double complex* cofh = (double complex*)calloc(ncsf, sizeof(double complex));
-        // double complex* cofc = (double complex*)calloc(ncsf, sizeof(double complex));
-    
-        // double complex* h11 = (double complex *)calloc(ncsf*ncsf, sizeof(double complex));
-        // double complex* h22 = (double complex *)calloc(ncsf, sizeof(double complex));
-        // double complex* h33 = (double complex *)calloc(ncsf, sizeof(double complex));
       
         com1 = -0.5*I*dtim;
         double time, epls, eff;
@@ -511,7 +374,6 @@ int main(){
                   cofh[j] = cofi[n1+j];
                 }  
 
-                //correct
                 MPI_Send(cofh, ncsf, MPI_DOUBLE_COMPLEX, i, 1, MPI_COMM_WORLD);
               } 
 
@@ -519,7 +381,6 @@ int main(){
               for(int i=1; i<size; i++){
                 n1 = k + i*ncsf;
 
-                //correct
                 MPI_Recv(cofc, ncsf, MPI_DOUBLE_COMPLEX, i, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
                                 
                 for(int j=1; j<ncsf; j++){
@@ -528,7 +389,7 @@ int main(){
               } 
             }
 
-/*
+            
             for (int i = 0; i < ncsf; i++) cofh[i] = CMPLX(0.0,0.0);
             n1 = ncsf*npar*size;
 
@@ -568,27 +429,20 @@ int main(){
                 for (int i = 0; i < ncsf; i++) cofh[i] = CMPLX(0.0,0.0);
                 
                 for(int j=0; j<ncsf; j++){
-                   cofh[i] = cofi[n1 + i*ncsf + j];
+                   cofh[j] = cofi[n1 + i*ncsf + j];
                 }
-                //correct
+                
                 MPI_Send(cofh, ncsf, MPI_DOUBLE_COMPLEX, i, 1, MPI_COMM_WORLD); 
             } 
             
             for(int i=1; i<nres; i++){
-                // correct
                 MPI_Recv(cofc, ncsf, MPI_DOUBLE_COMPLEX, i, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
                 for(int j=0; j<ncsf; j++){
                   coff[n1 + i*ncsf + j] = cofc[j];
                 }        
             }
-*/      
+      
             // ----------------End of exhm---------------------
-            
-            file = fopen("./result/coff_exhm_parallel.txt","w");  
-            for(int i=0; i<nfloq; i++){
-                fprintf(file,"%7.5e %7.5e \n",creal(coff[i]),cimag(coff[i]));
-            }
-            fclose(file);  
 
             n1 = 0; eff = 0;
             for (int i = 0; i < nfloq; i++) cofi[i] = CMPLX(0.0,0.0);
@@ -615,13 +469,6 @@ int main(){
                 }
             }
       
-            //      file = fopen("./result/cofh.txt","w");  
-            //      for(int i=0; i<nfloq; i++){
-            //          fprintf(file,"%7.5e %7.5e \n",creal(coff[i]),cimag(coff[i]));
-            //      }
-            //      fclose(file); 
-      
-      
             for (int i = 0; i < nfloq; i++) cofi[i] = CMPLX(0.0,0.0);
       
             for (int i=0; i<nfloq; i++){
@@ -634,11 +481,6 @@ int main(){
               cofh[i] = coff[inzr+i];
             }
           
-            //      file = fopen("./result/cofh.txt","w");  
-            //      for(int i=0; i<ncsf; i++){
-            //          fprintf(file,"%7.5e %7.5e \n",creal(cofh[i]),cimag(cofh[i]));
-            //      }
-            //      fclose(file); 
       
             dipole = CMPLX(0.0,0.0);
             for (int i=0; i<ncsf; i++){
@@ -666,16 +508,8 @@ int main(){
         
   } // mpi rank=0 ends
   else{
-        
-        // double complex* cofh = (double complex*)calloc(ncsf, sizeof(double complex));
-        // double complex* cofc = (double complex*)calloc(ncsf, sizeof(double complex));
-        // double complex** exhm = calloc_2d_array_complex(ncsf, ncsf);
 
-        //double complex* h11 = (double complex *)calloc(ncsf*ncsf, sizeof(double complex));
-        //double complex* h22 = (double complex *)calloc(ncsf, sizeof(double complex));
-        //double complex* h33 = (double complex *)calloc(ncsf, sizeof(double complex));
-
-        MPI_Recv(lexhm, ncsf*ncsf, MPI_C_DOUBLE_COMPLEX, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        MPI_Recv(lexhm, ncsf*ncsf, MPI_DOUBLE_COMPLEX, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         
         for(int i=0; i<ncsf; i++){
             for(int j=0; j<ncsf; j++){
@@ -684,9 +518,9 @@ int main(){
         }
 
         for(int itim = 0; itim<ntim; itim++){
-          //  for(int ipar = 0; ipar<npar; ipar++){ 
-
-                //correct 
+            
+            for(int ipar = 0; ipar<npar; ipar++){ 
+                
                 MPI_Recv(cofh, ncsf, MPI_DOUBLE_COMPLEX, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
                 
                 
@@ -712,13 +546,12 @@ int main(){
                 } 
 
                 // ---------------------------------------
-                // correct
+                
                 MPI_Send(cofc, ncsf, MPI_DOUBLE_COMPLEX, 0, 2, MPI_COMM_WORLD);
                 
-   //         }      
-           /*
-            if (rank <= nres){ 
-                //correct
+            }      
+           
+            if (rank < nres){
                 MPI_Recv(cofh, ncsf, MPI_DOUBLE_COMPLEX, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);                
  
                 for (int i = 0; i < ncsf; i++) cofc[i] = CMPLX(0.0,0.0);
@@ -742,16 +575,10 @@ int main(){
                 for(int i=0; i<ncsf; i++){
                     cofc[i] = h33[i];
                 }
-                
-                //correct
                 MPI_Send(cofc, ncsf, MPI_DOUBLE_COMPLEX, 0, 2, MPI_COMM_WORLD);
             }
-*/            
+           
         } // time loop for slaves ends
-
-        // free memory
-        //free(cofh); free(cofc);
-        //free(h11); free(h22); free(h33);
 
   }// MPI rank != 0 ends
 

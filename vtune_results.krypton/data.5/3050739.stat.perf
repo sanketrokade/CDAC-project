@@ -1,0 +1,36 @@
+# AMPLXE_PERF_STAT
+# hostname : krypton
+# os release : 6.8.0-52-generic
+# arch : x86_64
+# cpuid : GenuineIntel,6,141,1
+# cpudesc : 11th Gen Intel(R) Core(TM) i7-11800H @ 2.30GHz
+# total memory : 16146288 kB
+# nrcpus online : 16
+# nrcpus avail : 16
+# sibling cores : 0-15
+# sibling threads : 0,8
+# sibling threads : 1,9
+# sibling threads : 2,10
+# sibling threads : 3,11
+# sibling threads : 4,12
+# sibling threads : 5,13
+# sibling threads : 6,14
+# sibling threads : 7,15
+# process id : 3050739
+;;156143663220;0
+;;104093028780;1
+;;287522292332;2
+;;95116937424;3
+;;43523;4
+;;0;5
+;;0;6
+;;5047;7
+;;8023883;8
+;;0;9
+;;0;10
+;;309460472330;11
+;;313360725078;12
+;;248298096;13
+;;0;14
+;;474948945780;15
+;;475315713417;16
